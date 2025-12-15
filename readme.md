@@ -42,4 +42,5 @@ Our toolkit directly amplifies that investment by making it easier for developer
 
 What is the current stage of your project.
 
-MVP in Developmen
+MVP in Development 
+
