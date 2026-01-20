@@ -1,0 +1,15 @@
+src/
+tsconfig.json
+.eslintrc.json
+.prettierrc
+jest.config.js
+.github/
+*.test.ts
+*.spec.ts
+coverage/
+.vscode/
+.idea/
+.DS_Store
+*.log
+.env
+.env.*
