@@ -2,7 +2,11 @@
 
 CLI tool for building and profiling Arbitrum Stylus smart contracts.
 
+[![npm version](https://img.shields.io/npm/v/stylus-toolkit.svg)](https://www.npmjs.com/package/stylus-toolkit)
 [![License](https://img.shields.io/npm/l/stylus-toolkit)](LICENSE)
+[![Downloads](https://img.shields.io/npm/dt/stylus-toolkit.svg)](https://www.npmjs.com/package/stylus-toolkit)
+[![CI](https://github.com/soloking1412/Stylus-Toolkit/workflows/CI/badge.svg)](https://github.com/soloking1412/Stylus-Toolkit/actions)
+[![Node Version](https://img.shields.io/node/v/stylus-toolkit.svg)](https://nodejs.org)
 
 ## Features
 
