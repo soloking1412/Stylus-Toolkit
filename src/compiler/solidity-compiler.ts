@@ -1,6 +1,7 @@
 import execa from 'execa';
 import path from 'path';
 import fs from 'fs-extra';
+import solc from 'solc';
 import { logger } from '../utils/logger';
 import { FileSystem } from '../utils/file-system';
 import { CompilationResult } from '../types';
@@ -105,7 +106,6 @@ export class SolidityCompiler {
   }
 
   private async compileWithSolcJs(contractPath?: string): Promise<CompilationResult> {
-    const solc = require('solc');
     const startTime = Date.now();
 
     const solidityPath = contractPath

@@ -92,8 +92,8 @@ opt-level = "z"
 
 This project was generated using the Stylus Toolkit CLI.
 
-${hasRust ? '### Rust (Stylus)\n\nLocation: \`contracts-rust/src/lib.rs\`\n' : ''}
-${hasSolidity ? '### Solidity\n\nLocation: \`contracts-solidity/\`\n' : ''}
+${hasRust ? '### Rust (Stylus)\n\nLocation: `contracts-rust/src/lib.rs`\n' : ''}
+${hasSolidity ? '### Solidity\n\nLocation: `contracts-solidity/`\n' : ''}
 
 ## Quick Start
 
@@ -107,8 +107,8 @@ stylus-toolkit profile
 
 ### Compile Contracts
 
-${hasRust ? '#### Rust (Stylus)\n\`\`\`bash\ncd contracts-rust\ncargo build --release --target wasm32-unknown-unknown\n\`\`\`\n' : ''}
-${hasSolidity ? '#### Solidity\n\`\`\`bash\ncd contracts-solidity\nforge build\n\`\`\`\n' : ''}
+${hasRust ? '#### Rust (Stylus)\n```bash\ncd contracts-rust\ncargo build --release --target wasm32-unknown-unknown\n```\n' : ''}
+${hasSolidity ? '#### Solidity\n```bash\ncd contracts-solidity\nforge build\n```\n' : ''}
 
 ## Documentation
 
