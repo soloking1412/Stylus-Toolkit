@@ -13,6 +13,7 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
+    "test": "echo \"Tests will be added in Milestone 2\" && exit 0",
     "prepare": "npm run build"
   },
   "keywords": [
