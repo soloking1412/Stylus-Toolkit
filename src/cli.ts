@@ -3,6 +3,8 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init';
+import { buildCommand } from './commands/build';
+import { devCommand } from './commands/dev';
 import { profileCommand } from './commands/profile';
 import { benchmarkCommand } from './commands/benchmark';
 import { configCommand } from './commands/config';
@@ -12,7 +14,7 @@ const program = new Command();
 program
   .name('stylus-toolkit')
   .description('A comprehensive CLI development environment for Arbitrum Stylus smart contracts')
-  .version('0.1.0');
+  .version('0.2.4');
 
 program
   .command('init')
@@ -22,6 +24,21 @@ program
   .option('--rust-only', 'Initialize Rust-only project')
   .option('--solidity-only', 'Initialize Solidity-only project')
   .action(initCommand);
+
+program
+  .command('build')
+  .description('Build Rust contracts to WASM')
+  .option('--rust-only', 'Build only Rust contracts')
+  .option('--no-release', 'Build in debug mode instead of release')
+  .option('--no-check', 'Skip cargo stylus check')
+  .action(buildCommand);
+
+program
+  .command('dev')
+  .description('Start a local Stylus development node')
+  .option('-p, --port <port>', 'Port for RPC endpoint', '8547')
+  .option('-d, --detach', 'Run node in background (detached mode)')
+  .action(devCommand);
 
 program
   .command('profile')

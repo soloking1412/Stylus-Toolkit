@@ -15,13 +15,14 @@ import { ProfileOptions } from '../types';
 export async function profileCommand(options: ProfileOptions): Promise<void> {
   logger.header('Stylus Toolkit - Gas Profiling');
 
-  try {
-    const rpcUrl = options.rpcUrl || config.getNetwork(options.network)?.rpcUrl;
+  const rpcUrl = options.rpcUrl || config.getNetwork(options.network)?.rpcUrl;
 
-    if (!rpcUrl) {
-      logger.error(`Network "${options.network}" not found in configuration`);
-      process.exit(1);
-    }
+  if (!rpcUrl) {
+    logger.error(`Network "${options.network}" not found in configuration`);
+    process.exit(1);
+  }
+
+  try {
 
     logger.info(`Network: ${options.network}`);
     logger.info(`RPC URL: ${rpcUrl}`);
@@ -123,7 +124,33 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
     logger.newLine();
     logger.success('Gas profiling complete!');
   } catch (error) {
-    logger.error(`Profiling failed: ${(error as Error).message}`);
+    const errorMessage = (error as Error).message;
+
+    logger.newLine();
+    logger.error('Gas profiling failed');
+
+    // Check if it's a network connection error
+    if (errorMessage.includes('JsonRpcProvider') || errorMessage.includes('network') || !errorMessage) {
+      logger.newLine();
+      logger.section('Network Connection Failed');
+      logger.warn(`Could not connect to: ${rpcUrl}`);
+      logger.newLine();
+      logger.info('Gas profiling requires a running blockchain node.');
+      logger.info('For Milestone 1, compilation works but gas profiling needs a node.');
+      logger.newLine();
+      logger.info('Quick Start:');
+      logger.info('  • Start local node: stylus-toolkit dev --detach');
+      logger.info('  • Then run profile: stylus-toolkit profile --contract <name>');
+      logger.newLine();
+      logger.info('Other Options:');
+      logger.info('  • Use testnet: stylus-toolkit profile --network arbitrum-sepolia');
+      logger.info('  • Custom RPC: stylus-toolkit profile --rpc <url>');
+      logger.newLine();
+      logger.info('Note: Full gas profiling implementation is part of Milestone 2');
+    } else {
+      logger.error(errorMessage);
+    }
+
     if (process.env.DEBUG) {
       console.error(error);
     }
@@ -173,6 +200,61 @@ function displayResults(comparison: any, detailed: boolean): void {
   }
 
   console.log(table.toString());
+
+  // Display TCO Analysis (Total Cost of Ownership)
+  logger.newLine();
+  logger.section('Total Cost of Ownership (TCO) Analysis');
+  logger.info(
+    `Based on ${comparison.tco.callFrequency} calls per function (${comparison.tco.functionCount} functions)`
+  );
+  logger.newLine();
+
+  const tcoTable = new Table({
+    head: ['Metric', 'Rust (Stylus)', 'Solidity', 'Difference'],
+    colWidths: [18, 18, 18, 30],
+    style: {
+      head: ['cyan', 'bold'],
+    },
+  });
+
+  const executionRust = comparison.tco.rustTCO - comparison.rustProfile.deploymentGas;
+  const executionSolidity = comparison.tco.solidityTCO - comparison.solidityProfile.deploymentGas;
+  const executionDiff = executionSolidity - executionRust;
+
+  tcoTable.push([
+    'Deployment',
+    comparison.rustProfile.deploymentGas.toLocaleString(),
+    comparison.solidityProfile.deploymentGas.toLocaleString(),
+    (comparison.solidityProfile.deploymentGas - comparison.rustProfile.deploymentGas).toLocaleString(),
+  ]);
+
+  tcoTable.push([
+    'Execution (Total)',
+    executionRust.toLocaleString(),
+    executionSolidity.toLocaleString(),
+    executionDiff.toLocaleString(),
+  ]);
+
+  tcoTable.push([
+    chalk.bold('TOTAL (TCO)'),
+    chalk.bold(comparison.tco.rustTCO.toLocaleString()),
+    chalk.bold(comparison.tco.solidityTCO.toLocaleString()),
+    chalk.bold(
+      `${comparison.tco.tcoAbsolute.toLocaleString()} (${chalk.green(comparison.tco.tcoPercentage.toFixed(2) + '% savings')})`
+    ),
+  ]);
+
+  console.log(tcoTable.toString());
+
+  // Display KPI Achievement
+  logger.newLine();
+  if (comparison.tco.tcoPercentage >= 25) {
+    logger.success(
+      `✅ KPI ACHIEVED: ${comparison.tco.tcoPercentage.toFixed(2)}% TCO savings (Target: 25%+)`
+    );
+  } else {
+    logger.warn(`⚠️  TCO savings: ${comparison.tco.tcoPercentage.toFixed(2)}% (Target: 25%+)`);
+  }
 
   if (detailed) {
     logger.newLine();

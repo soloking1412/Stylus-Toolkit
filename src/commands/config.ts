@@ -27,6 +27,12 @@ export async function configCommand(options: ConfigOptions): Promise<void> {
   }
 
   if (options.get) {
+    const validKeys = ['defaultNetwork', 'gasPrice', 'resultsDir', 'privateKey'];
+    if (!validKeys.includes(options.get)) {
+      logger.error(`Unknown configuration key "${options.get}"`);
+      logger.info(`Valid keys: ${validKeys.join(', ')}`);
+      process.exit(1);
+    }
     const value = config.get(options.get as any);
     console.log(chalk.cyan(options.get + ':'), value);
     return;

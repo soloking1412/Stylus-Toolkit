@@ -1,6 +1,6 @@
 # Stylus Toolkit
 
-CLI tool for building and profiling Arbitrum Stylus smart contracts.
+**The easiest way to build Arbitrum Stylus smart contracts in Rust.**
 
 [![npm version](https://img.shields.io/npm/v/stylus-toolkit.svg)](https://www.npmjs.com/package/stylus-toolkit)
 [![License](https://img.shields.io/npm/l/stylus-toolkit)](LICENSE)
@@ -8,34 +8,55 @@ CLI tool for building and profiling Arbitrum Stylus smart contracts.
 [![CI](https://github.com/soloking1412/Stylus-Toolkit/workflows/CI/badge.svg)](https://github.com/soloking1412/Stylus-Toolkit/actions)
 [![Node Version](https://img.shields.io/node/v/stylus-toolkit.svg)](https://nodejs.org)
 
-## Features
+Build, deploy, and profile Stylus contracts with simple commands. **No Docker required** - works with testnets out of the box!
 
-- Gas profiling for Rust and Solidity contracts
-- Side-by-side performance comparison
-- Project templates (ERC-20, ERC-721, DeFi, Basic)
-- Multi-format exports (JSON, CSV, HTML)
-- Cross-platform support
+## ✨ Features
 
-## Installation
+- 🚀 **One-command project setup** - 4 ready-to-deploy templates
+- 📦 **Built-in WASM compiler** - Automatic Rust to WebAssembly compilation
+- ⚡ **Gas profiling** - Compare Rust vs Solidity gas usage
+- 🌐 **Network support** - Local, testnet, and mainnet configurations
+- 🐳 **Docker optional** - Use testnets for development (no Docker needed!)
+- 📊 **Multiple export formats** - JSON, CSV, HTML reports
+
+## 🎯 Quick Start (3 Commands)
 
 ```bash
+# 1. Install
 npm install -g stylus-toolkit
+
+# 2. Create project
+stylus-toolkit init -n my-counter -t basic && cd my-counter
+
+# 3. Build
+cd contracts-rust && rustup target add wasm32-unknown-unknown && cd .. && stylus-toolkit build
 ```
 
-**Prerequisites:** Node.js 16+, Rust/Cargo
+**That's it!** Your contract is ready to deploy.
 
-## Quick Start
-
+**No Docker?** No problem! Deploy to testnet directly:
 ```bash
-# Create new project
-stylus-toolkit init
-
-# Profile gas usage
-cd my-stylus-project
-stylus-toolkit profile --export html
+stylus-toolkit config --set defaultNetwork=arbitrum-sepolia
 ```
 
-## Commands
+## 📋 Prerequisites
+
+**Required:**
+- Node.js 16+ ([Download](https://nodejs.org/))
+- Rust ([Install](https://rustup.rs/))
+
+**Optional:**
+- Docker (only if you want local node) ([Download](https://www.docker.com/get-started))
+
+Most developers use testnet and don't need Docker!
+
+## 📚 Documentation
+
+- **[Quick Start Guide](./QUICKSTART.md)** - Complete tutorial from zero to deployment
+- **[Cheat Sheet](./CHEATSHEET.md)** - All commands at a glance
+- **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
+
+## 🛠️ Commands
 
 ### init
 

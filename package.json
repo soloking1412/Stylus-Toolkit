@@ -1,7 +1,7 @@
 {
   "name": "stylus-toolkit",
-  "version": "0.1.0",
-  "description": "A comprehensive CLI development environment for Arbitrum Stylus smart contracts",
+  "version": "0.2.4",
+  "description": "A comprehensive CLI development environment for Arbitrum Stylus smart contracts with automated gas profiling",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -41,6 +41,12 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "files": [
+    "dist/",
+    "src/templates/Cargo.lock",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "axios": "^1.6.2",
     "chalk": "^4.1.2",

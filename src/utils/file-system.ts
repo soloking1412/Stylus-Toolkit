@@ -77,18 +77,29 @@ export class FileSystem {
 
   static async listContracts(language: 'rust' | 'solidity'): Promise<string[]> {
     const root = this.getProjectRoot();
-    const searchDirs = language === 'rust'
-      ? ['contracts-rust/src', 'src', 'contracts']
-      : ['contracts-solidity', 'contracts', 'solidity'];
 
+    if (language === 'rust') {
+      // For Rust, read contract name from Cargo.toml
+      const cargoTomlPath = path.join(root, 'contracts-rust', 'Cargo.toml');
+      if (await this.fileExists(cargoTomlPath)) {
+        const cargoToml = await this.readFile(cargoTomlPath);
+        const nameMatch = cargoToml.match(/name\s*=\s*"([^"]+)"/);
+        if (nameMatch) {
+          return [nameMatch[1]];
+        }
+      }
+      return [];
+    }
+
+    // For Solidity, list .sol files
+    const searchDirs = ['contracts-solidity', 'contracts', 'solidity'];
     const contracts: string[] = [];
 
     for (const dir of searchDirs) {
       const fullPath = path.join(root, dir);
       if (await this.fileExists(fullPath)) {
-        const ext = language === 'rust' ? '.rs' : '.sol';
         const files = await fs.readdir(fullPath);
-        contracts.push(...files.filter(f => f.endsWith(ext)).map(f => f.replace(ext, '')));
+        contracts.push(...files.filter(f => f.endsWith('.sol')).map(f => f.replace('.sol', '')));
       }
     }
 

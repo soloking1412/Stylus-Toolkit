@@ -1,34 +1,25 @@
 import Conf from 'conf';
 import { ToolkitConfig, NetworkConfig } from '../types';
 
-const defaultNetworks: Map<string, NetworkConfig> = new Map([
-  [
-    'local',
-    {
-      name: 'Local Stylus Testnet',
-      rpcUrl: 'http://localhost:8547',
-      chainId: 412346,
-    },
-  ],
-  [
-    'arbitrum-sepolia',
-    {
-      name: 'Arbitrum Sepolia',
-      rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
-      chainId: 421614,
-      explorer: 'https://sepolia.arbiscan.io',
-    },
-  ],
-  [
-    'arbitrum-one',
-    {
-      name: 'Arbitrum One',
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-      chainId: 42161,
-      explorer: 'https://arbiscan.io',
-    },
-  ],
-]);
+const defaultNetworks: Record<string, NetworkConfig> = {
+  'local': {
+    name: 'Local Stylus Testnet',
+    rpcUrl: 'http://localhost:8547',
+    chainId: 412346,
+  },
+  'arbitrum-sepolia': {
+    name: 'Arbitrum Sepolia',
+    rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
+    chainId: 421614,
+    explorer: 'https://sepolia.arbiscan.io',
+  },
+  'arbitrum-one': {
+    name: 'Arbitrum One',
+    rpcUrl: 'https://arb1.arbitrum.io/rpc',
+    chainId: 42161,
+    explorer: 'https://arbiscan.io',
+  },
+};
 
 const defaultConfig: ToolkitConfig = {
   defaultNetwork: 'local',
@@ -45,6 +36,11 @@ class ConfigManager {
       projectName: 'stylus-toolkit',
       defaults: defaultConfig as any,
     });
+
+    // Ensure networks are properly initialized
+    if (!this.config.get('networks') || Object.keys(this.config.get('networks') as any).length === 0) {
+      this.config.set('networks', defaultNetworks as any);
+    }
   }
 
   get(key: keyof ToolkitConfig): any {

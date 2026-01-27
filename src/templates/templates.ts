@@ -1,30 +1,35 @@
 export const TEMPLATES: Record<string, any> = {
   basic: {
     name: 'Counter',
-    rust: `#![cfg_attr(not(feature = "export-abi"), no_main)]
+    rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
+
+#[macro_use]
 extern crate alloc;
 
-use stylus_sdk::{alloy_primitives::U256, prelude::*, storage::StorageU256};
+use alloc::vec::Vec;
+use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
-#[storage]
-#[entrypoint]
-pub struct Counter {
-    count: StorageU256,
+sol_storage! {
+    #[entrypoint]
+    pub struct Counter {
+        uint256 number;
+    }
 }
 
 #[public]
 impl Counter {
+    pub fn number(&self) -> U256 {
+        self.number.get()
+    }
+
+    pub fn set_number(&mut self, new_number: U256) {
+        self.number.set(new_number);
+    }
+
     pub fn increment(&mut self) {
-        let count = self.count.get() + U256::from(1);
-        self.count.set(count);
-    }
-
-    pub fn get_count(&self) -> U256 {
-        self.count.get()
-    }
-
-    pub fn set_count(&mut self, count: U256) {
-        self.count.set(count);
+        let number = self.number.get();
+        self.set_number(number + U256::from(1));
     }
 }
 `,
@@ -57,13 +62,13 @@ use stylus_sdk::{
     alloy_primitives::{Address, U256},
     prelude::*,
     storage::{StorageMap, StorageU256},
+    msg,
 };
 
 #[storage]
 #[entrypoint]
 pub struct ERC20 {
     balances: StorageMap<Address, StorageU256>,
-    allowances: StorageMap<Address, StorageMap<Address, StorageU256>>,
     total_supply: StorageU256,
 }
 
@@ -85,20 +90,18 @@ impl ERC20 {
             return false;
         }
 
-        self.balances.setter(sender).sub(amount);
-        self.balances.setter(to).add(amount);
+        self.balances.insert(sender, sender_balance - amount);
+        let to_balance = self.balances.get(to);
+        self.balances.insert(to, to_balance + amount);
 
         true
     }
 
-    pub fn approve(&mut self, spender: Address, amount: U256) -> bool {
-        let owner = msg::sender();
-        self.allowances.setter(owner).setter(spender).set(amount);
-        true
-    }
-
-    pub fn allowance(&self, owner: Address, spender: Address) -> U256 {
-        self.allowances.get(owner).get(spender)
+    pub fn mint(&mut self, to: Address, amount: U256) {
+        let balance = self.balances.get(to);
+        self.balances.insert(to, balance + amount);
+        let supply = self.total_supply.get();
+        self.total_supply.set(supply + amount);
     }
 }
 `,
@@ -143,57 +146,33 @@ contract ERC20Token {
 `,
   },
   erc721: {
-    name: 'ERC721NFT',
-    rust: `#![cfg_attr(not(feature = "export-abi"), no_main)]
+    name: 'NFTCounter',
+    rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
+
+#[macro_use]
 extern crate alloc;
 
-use stylus_sdk::{
-    alloy_primitives::{Address, U256},
-    prelude::*,
-    storage::{StorageMap, StorageU256},
-};
+use alloc::vec::Vec;
+use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
-#[storage]
-#[entrypoint]
-pub struct ERC721 {
-    owners: StorageMap<U256, Address>,
-    balances: StorageMap<Address, StorageU256>,
-    token_approvals: StorageMap<U256, Address>,
-    next_token_id: StorageU256,
+sol_storage! {
+    #[entrypoint]
+    pub struct NFTCounter {
+        uint256 total_minted;
+    }
 }
 
 #[public]
-impl ERC721 {
-    pub fn owner_of(&self, token_id: U256) -> Address {
-        self.owners.get(token_id)
+impl NFTCounter {
+    pub fn total_minted(&self) -> U256 {
+        self.total_minted.get()
     }
 
-    pub fn balance_of(&self, owner: Address) -> U256 {
-        self.balances.get(owner)
-    }
-
-    pub fn mint(&mut self, to: Address) -> U256 {
-        let token_id = self.next_token_id.get();
-
-        self.owners.setter(token_id).set(to);
-        self.balances.setter(to).add(U256::from(1));
-        self.next_token_id.set(token_id + U256::from(1));
-
+    pub fn mint(&mut self) -> U256 {
+        let token_id = self.total_minted.get();
+        self.total_minted.set(token_id + U256::from(1));
         token_id
-    }
-
-    pub fn transfer_from(&mut self, from: Address, to: Address, token_id: U256) -> bool {
-        let owner = self.owners.get(token_id);
-
-        if owner != from {
-            return false;
-        }
-
-        self.owners.setter(token_id).set(to);
-        self.balances.setter(from).sub(U256::from(1));
-        self.balances.setter(to).add(U256::from(1));
-
-        true
     }
 }
 `,
@@ -238,51 +217,41 @@ contract ERC721NFT {
 `,
   },
   defi: {
-    name: 'SimpleDEX',
-    rust: `#![cfg_attr(not(feature = "export-abi"), no_main)]
+    name: 'LiquidityPool',
+    rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
+
+#[macro_use]
 extern crate alloc;
 
-use stylus_sdk::{
-    alloy_primitives::{Address, U256},
-    prelude::*,
-    storage::{StorageMap, StorageU256},
-};
+use alloc::vec::Vec;
+use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
-#[storage]
-#[entrypoint]
-pub struct SimpleDEX {
-    liquidity: StorageMap<Address, StorageU256>,
-    reserves: StorageU256,
+sol_storage! {
+    #[entrypoint]
+    pub struct LiquidityPool {
+        uint256 total_liquidity;
+    }
 }
 
 #[public]
-impl SimpleDEX {
+impl LiquidityPool {
+    pub fn total_liquidity(&self) -> U256 {
+        self.total_liquidity.get()
+    }
+
     pub fn add_liquidity(&mut self, amount: U256) {
-        let provider = msg::sender();
-        self.liquidity.setter(provider).add(amount);
-        self.reserves.set(self.reserves.get() + amount);
+        let current = self.total_liquidity.get();
+        self.total_liquidity.set(current + amount);
     }
 
     pub fn remove_liquidity(&mut self, amount: U256) -> bool {
-        let provider = msg::sender();
-        let current_liquidity = self.liquidity.get(provider);
-
-        if current_liquidity < amount {
+        let current = self.total_liquidity.get();
+        if current < amount {
             return false;
         }
-
-        self.liquidity.setter(provider).sub(amount);
-        self.reserves.set(self.reserves.get() - amount);
-
+        self.total_liquidity.set(current - amount);
         true
-    }
-
-    pub fn get_liquidity(&self, provider: Address) -> U256 {
-        self.liquidity.get(provider)
-    }
-
-    pub fn get_reserves(&self) -> U256 {
-        self.reserves.get()
     }
 }
 `,

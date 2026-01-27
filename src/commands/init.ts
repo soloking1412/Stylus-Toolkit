@@ -5,11 +5,27 @@ import { FileSystem } from '../utils/file-system';
 import { InitOptions, ProjectConfig } from '../types';
 import { TemplateGenerator } from '../templates/generator';
 
+const VALID_TEMPLATES = ['basic', 'erc20', 'erc721', 'defi'];
+
 export async function initCommand(options: InitOptions): Promise<void> {
   logger.header('Stylus Toolkit - Initialize New Project');
 
   let projectName = options.name;
   let template = options.template;
+
+  // Validate project name if provided via CLI
+  if (projectName) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(projectName)) {
+      logger.error('Project name can only contain letters, numbers, hyphens, and underscores');
+      process.exit(1);
+    }
+  }
+
+  // Validate template if provided via CLI
+  if (template && !VALID_TEMPLATES.includes(template)) {
+    logger.error(`Invalid template "${template}". Available templates: ${VALID_TEMPLATES.join(', ')}`);
+    process.exit(1);
+  }
 
   if (!projectName) {
     const answers = await inquirer.prompt([
@@ -120,9 +136,10 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
     logger.newLine();
     logger.section('Next Steps');
-    console.log(`  1. ${logger.info.bind(logger)} cd ${projectName}`);
-    console.log(`  2. ${logger.info.bind(logger)} stylus-toolkit profile`);
-    console.log(`  3. ${logger.info.bind(logger)} Check the README.md for more information`);
+    logger.info(`1. cd ${projectName}`);
+    logger.info('2. stylus-toolkit build');
+    logger.info('3. stylus-toolkit profile');
+    logger.info('4. Check the README.md for more information');
     logger.newLine();
 
   } catch (error) {

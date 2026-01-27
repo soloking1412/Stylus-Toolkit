@@ -1,0 +1,20 @@
+# Rust
+target/
+Cargo.lock
+
+# Solidity
+out/
+cache/
+
+# Environment
+.env
+
+# Results
+.stylus-toolkit/results/
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/

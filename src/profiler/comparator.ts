@@ -3,17 +3,20 @@ import {
   ComparisonResult,
   GasSavings,
   FunctionSavings,
+  TCOAnalysis,
 } from '../types';
 
 export class GasComparator {
   compare(rustProfile: GasProfile, solidityProfile: GasProfile): ComparisonResult {
     const savings = this.calculateSavings(rustProfile, solidityProfile);
+    const tco = this.calculateTCO(rustProfile, solidityProfile);
 
     return {
       contractName: rustProfile.contractName,
       rustProfile,
       solidityProfile,
       savings,
+      tco,
       timestamp: new Date().toISOString(),
     };
   }
@@ -91,6 +94,46 @@ export class GasComparator {
     return {
       absolute: totalAbsolute / functionSavings.size,
       percentage: totalPercentage / functionSavings.size,
+    };
+  }
+
+  private calculateTCO(rustProfile: GasProfile, solidityProfile: GasProfile): TCOAnalysis {
+    // Total Cost of Ownership = Deployment + (Execution × Call Frequency)
+    const callFrequency = 100; // Use function call frequency from estimates
+
+    let rustTotalExecution = 0;
+    let solidityTotalExecution = 0;
+    let functionCount = 0;
+
+    for (const [functionName, rustData] of rustProfile.functionGas) {
+      const solidityData = solidityProfile.functionGas.get(functionName);
+      if (solidityData) {
+        // Type assertion for estimation data which has avgGas and calls properties
+        const rustDataAny = rustData as any;
+        const solidityDataAny = solidityData as any;
+
+        const rustCalls = rustDataAny.calls || rustData.executions || callFrequency;
+        const solidityCalls = solidityDataAny.calls || solidityData.executions || callFrequency;
+
+        rustTotalExecution += rustData.avgGas * rustCalls;
+        solidityTotalExecution += solidityData.avgGas * solidityCalls;
+        functionCount++;
+      }
+    }
+
+    const rustTCO = rustProfile.deploymentGas + rustTotalExecution;
+    const solidityTCO = solidityProfile.deploymentGas + solidityTotalExecution;
+
+    const tcoAbsolute = solidityTCO - rustTCO;
+    const tcoPercentage = solidityTCO > 0 ? (tcoAbsolute / solidityTCO) * 100 : 0;
+
+    return {
+      rustTCO,
+      solidityTCO,
+      tcoAbsolute,
+      tcoPercentage,
+      callFrequency,
+      functionCount,
     };
   }
 

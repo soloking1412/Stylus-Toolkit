@@ -28,6 +28,21 @@ export class TemplateGenerator {
 
     const cargoToml = path.join(projectPath, 'contracts-rust', 'Cargo.toml');
     await FileSystem.writeFile(cargoToml, this.generateCargoToml(template.name));
+
+    const rustToolchain = path.join(projectPath, 'contracts-rust', 'rust-toolchain.toml');
+    await FileSystem.writeFile(rustToolchain, this.generateRustToolchain());
+
+    const cargoDir = path.join(projectPath, 'contracts-rust', '.cargo');
+    await FileSystem.ensureDir(cargoDir);
+    const cargoConfig = path.join(cargoDir, 'config.toml');
+    await FileSystem.writeFile(cargoConfig, this.generateCargoConfig());
+
+    const cargoLockSource = path.join(__dirname, 'Cargo.lock');
+    const cargoLockDest = path.join(projectPath, 'contracts-rust', 'Cargo.lock');
+    if (await FileSystem.fileExists(cargoLockSource)) {
+      const lockContent = await FileSystem.readFile(cargoLockSource);
+      await FileSystem.writeFile(cargoLockDest, lockContent);
+    }
   }
 
   private async generateSolidityFiles(projectPath: string, template: any): Promise<void> {
@@ -62,12 +77,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-stylus-sdk = "0.10.0"
-alloy-primitives = "0.8.19"
-alloy-sol-types = "0.8.19"
+alloy-primitives = "=0.8.20"
+alloy-sol-types = "=0.8.20"
+stylus-sdk = "0.9.0"
+hex = { version = "0.4", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }
+
+[features]
+default = ["mini-alloc"]
+export-abi = ["stylus-sdk/export-abi"]
+mini-alloc = ["stylus-sdk/mini-alloc"]
 
 [lib]
 crate-type = ["lib", "cdylib"]
@@ -77,7 +98,35 @@ codegen-units = 1
 strip = true
 lto = true
 panic = "abort"
-opt-level = "z"
+opt-level = 3
+`;
+  }
+
+  private generateRustToolchain(): string {
+    return `[toolchain]
+channel = "1.87.0"
+`;
+  }
+
+  private generateCargoConfig(): string {
+    return `[target.wasm32-unknown-unknown]
+rustflags = [
+  "-C", "link-arg=-zstack-size=32768",
+  "-C", "target-feature=-reference-types",
+  "-C", "target-feature=+bulk-memory",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
+
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
 `;
   }
 

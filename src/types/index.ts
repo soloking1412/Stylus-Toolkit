@@ -53,6 +53,7 @@ export interface ComparisonResult {
   rustProfile: GasProfile;
   solidityProfile: GasProfile;
   savings: GasSavings;
+  tco: TCOAnalysis;
   timestamp: string;
 }
 
@@ -76,6 +77,15 @@ export interface FunctionSavings {
   solidityGas: number;
 }
 
+export interface TCOAnalysis {
+  rustTCO: number;
+  solidityTCO: number;
+  tcoAbsolute: number;
+  tcoPercentage: number;
+  callFrequency: number;
+  functionCount: number;
+}
+
 export interface BenchmarkConfig {
   iterations: number;
   warmup: number;
@@ -91,7 +101,7 @@ export interface NetworkConfig {
 
 export interface ToolkitConfig {
   defaultNetwork: string;
-  networks: Map<string, NetworkConfig>;
+  networks: Record<string, NetworkConfig>;
   gasPrice: string;
   privateKey?: string;
   resultsDir: string;
