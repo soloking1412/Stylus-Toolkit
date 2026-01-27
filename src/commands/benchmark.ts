@@ -9,8 +9,11 @@ export async function benchmarkCommand(options: BenchmarkOptions): Promise<void>
   logger.info(`Export format: ${options.export}`);
 
   logger.newLine();
-  logger.warn('Benchmark feature coming soon in Milestone 2!');
-  logger.info('This will include:');
+  logger.warn('Benchmark feature is currently in development.');
+  logger.newLine();
+  logger.info('Use `stylus-toolkit profile` for gas profiling instead.');
+  logger.newLine();
+  logger.info('Planned features:');
   logger.info('  - Multiple iteration testing');
   logger.info('  - Statistical analysis');
   logger.info('  - Performance metrics');

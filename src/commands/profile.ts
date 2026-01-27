@@ -136,7 +136,6 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
       logger.warn(`Could not connect to: ${rpcUrl}`);
       logger.newLine();
       logger.info('Gas profiling requires a running blockchain node.');
-      logger.info('For Milestone 1, compilation works but gas profiling needs a node.');
       logger.newLine();
       logger.info('Quick Start:');
       logger.info('  • Start local node: stylus-toolkit dev --detach');
@@ -145,8 +144,6 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
       logger.info('Other Options:');
       logger.info('  • Use testnet: stylus-toolkit profile --network arbitrum-sepolia');
       logger.info('  • Custom RPC: stylus-toolkit profile --rpc <url>');
-      logger.newLine();
-      logger.info('Note: Full gas profiling implementation is part of Milestone 2');
     } else {
       logger.error(errorMessage);
     }
@@ -246,14 +243,16 @@ function displayResults(comparison: any, detailed: boolean): void {
 
   console.log(tcoTable.toString());
 
-  // Display KPI Achievement
+  // Display TCO Savings Summary
   logger.newLine();
   if (comparison.tco.tcoPercentage >= 25) {
     logger.success(
-      `✅ KPI ACHIEVED: ${comparison.tco.tcoPercentage.toFixed(2)}% TCO savings (Target: 25%+)`
+      `✅ Excellent gas optimization: ${comparison.tco.tcoPercentage.toFixed(2)}% TCO savings`
     );
+  } else if (comparison.tco.tcoPercentage > 0) {
+    logger.info(`Gas savings: ${comparison.tco.tcoPercentage.toFixed(2)}% TCO`);
   } else {
-    logger.warn(`⚠️  TCO savings: ${comparison.tco.tcoPercentage.toFixed(2)}% (Target: 25%+)`);
+    logger.warn(`Note: Deployment costs higher, but execution ${Math.abs(comparison.savings.totalAvgSavings.percentage).toFixed(2)}% cheaper`);
   }
 
   if (detailed) {
