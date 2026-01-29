@@ -99,7 +99,7 @@ export class FileSystem {
       const fullPath = path.join(root, dir);
       if (await this.fileExists(fullPath)) {
         const files = await fs.readdir(fullPath);
-        contracts.push(...files.filter(f => f.endsWith('.sol')).map(f => f.replace('.sol', '')));
+        contracts.push(...files.filter(f => f.endsWith('.sol')).map(f => f.replace('.sol', '').toLowerCase()));
       }
     }
 

@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init';
 import { buildCommand } from './commands/build';
+import { deployCommand } from './commands/deploy';
 import { devCommand } from './commands/dev';
 import { profileCommand } from './commands/profile';
 import { benchmarkCommand } from './commands/benchmark';
@@ -14,7 +15,7 @@ const program = new Command();
 program
   .name('stylus-toolkit')
   .description('A comprehensive CLI development environment for Arbitrum Stylus smart contracts')
-  .version('0.2.6');
+  .version('0.2.7');
 
 program
   .command('init')
@@ -32,6 +33,18 @@ program
   .option('--no-release', 'Build in debug mode instead of release')
   .option('--no-check', 'Skip cargo stylus check')
   .action(buildCommand);
+
+program
+  .command('deploy')
+  .description('Deploy Stylus contract with automatic gas estimation')
+  .option('-n, --network <network>', 'Network name (local, arbitrum-sepolia, arbitrum-one)', 'local')
+  .option('-r, --rpc <url>', 'Custom RPC endpoint URL')
+  .option('--private-key <key>', 'Private key for deployment (not recommended, use --private-key-path)')
+  .option('--private-key-path <path>', 'Path to file containing private key')
+  .option('--gas-limit <amount>', 'Manual gas limit (overrides automatic estimation)')
+  .option('--estimate-only', 'Only estimate gas, do not deploy')
+  .option('--no-activate', 'Skip contract activation step')
+  .action(deployCommand);
 
 program
   .command('dev')

@@ -1,6 +1,6 @@
 {
   "name": "stylus-toolkit",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "A comprehensive CLI development environment for Arbitrum Stylus smart contracts with automated gas profiling",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
