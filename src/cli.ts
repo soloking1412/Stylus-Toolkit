@@ -14,13 +14,13 @@ const program = new Command();
 program
   .name('stylus-toolkit')
   .description('A comprehensive CLI development environment for Arbitrum Stylus smart contracts')
-  .version('0.2.5');
+  .version('0.2.6');
 
 program
   .command('init')
   .description('Initialize a new Stylus project')
   .option('-n, --name <name>', 'Project name')
-  .option('-t, --template <template>', 'Project template (erc20, erc721, defi, basic)', 'basic')
+  .option('-t, --template <template>', 'Project template (erc20, erc721, defi, basic)')
   .option('--rust-only', 'Initialize Rust-only project')
   .option('--solidity-only', 'Initialize Solidity-only project')
   .action(initCommand);

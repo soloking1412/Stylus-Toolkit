@@ -43,52 +43,56 @@ export async function initCommand(options: InitOptions): Promise<void> {
     projectName = answers.projectName;
   }
 
-  if (!template || (!options.rustOnly && !options.solidityOnly && !projectName)) {
-    const prompts: any[] = [];
+  // Prompt for missing options in interactive mode
+  const prompts: any[] = [];
 
-    if (!template) {
-      prompts.push({
-        type: 'list',
-        name: 'template',
-        message: 'Select a template:',
-        choices: [
-          { name: 'Basic (Empty project)', value: 'basic' },
-          { name: 'ERC-20 Token', value: 'erc20' },
-          { name: 'ERC-721 NFT', value: 'erc721' },
-          { name: 'DeFi Protocol', value: 'defi' },
-        ],
-        default: 'basic',
-      });
+  if (!template) {
+    prompts.push({
+      type: 'list',
+      name: 'template',
+      message: 'Select a template:',
+      choices: [
+        { name: 'Basic (Simple counter)', value: 'basic' },
+        { name: 'ERC-20 Token', value: 'erc20' },
+        { name: 'ERC-721 NFT', value: 'erc721' },
+        { name: 'DeFi Protocol', value: 'defi' },
+      ],
+      default: 'basic',
+    });
+  }
+
+  if (!options.rustOnly && !options.solidityOnly) {
+    prompts.push({
+      type: 'checkbox',
+      name: 'languages',
+      message: 'Select languages to include:',
+      choices: [
+        { name: 'Rust (Stylus)', value: 'rust', checked: true },
+        { name: 'Solidity (for comparison)', value: 'solidity', checked: true },
+      ],
+      validate: (input: string[]) => {
+        if (input.length === 0) return 'Select at least one language';
+        return true;
+      },
+    });
+  }
+
+  if (prompts.length > 0) {
+    const answers = await inquirer.prompt(prompts);
+
+    if (answers.template) {
+      template = answers.template;
     }
 
-    if (!options.rustOnly && !options.solidityOnly && !projectName) {
-      prompts.push({
-        type: 'checkbox',
-        name: 'languages',
-        message: 'Select languages to include:',
-        choices: [
-          { name: 'Rust (Stylus)', value: 'rust', checked: true },
-          { name: 'Solidity (for comparison)', value: 'solidity', checked: true },
-        ],
-        validate: (input: string[]) => {
-          if (input.length === 0) return 'Select at least one language';
-          return true;
-        },
-      });
+    if (answers.languages) {
+      options.rustOnly = answers.languages.includes('rust') && !answers.languages.includes('solidity');
+      options.solidityOnly = answers.languages.includes('solidity') && !answers.languages.includes('rust');
     }
+  }
 
-    if (prompts.length > 0) {
-      const answers = await inquirer.prompt(prompts);
-
-      if (answers.template) {
-        template = answers.template;
-      }
-
-      if (answers.languages) {
-        options.rustOnly = answers.languages.includes('rust') && !answers.languages.includes('solidity');
-        options.solidityOnly = answers.languages.includes('solidity') && !answers.languages.includes('rust');
-      }
-    }
+  // Set default template if still not specified
+  if (!template) {
+    template = 'basic';
   }
 
   const hasRust = !options.solidityOnly;

@@ -62,7 +62,6 @@ use stylus_sdk::{
     alloy_primitives::{Address, U256},
     prelude::*,
     storage::{StorageMap, StorageU256},
-    msg,
 };
 
 #[storage]
@@ -83,7 +82,7 @@ impl ERC20 {
     }
 
     pub fn transfer(&mut self, to: Address, amount: U256) -> bool {
-        let sender = msg::sender();
+        let sender = self.vm().msg_sender();
         let sender_balance = self.balances.get(sender);
 
         if sender_balance < amount {

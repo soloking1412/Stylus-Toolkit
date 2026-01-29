@@ -101,15 +101,9 @@ export async function devCommand(options: DevOptions): Promise<void> {
       '-p', `${port}:8547`,
       '-p', '8548:8548',
       'offchainlabs/nitro-node:v3.7.1-926f1ab',
-      '--init.dev-init',
-      '--init.dev-init-address', '0x3f1Eae7D46d88F08fc2F8ed27FCb2AB183EB2d0E',
-      '--node.dangerous.no-l1-listener',
-      '--parent-chain.id=1337',
-      '--chain.id=412346',
-      '--http.api=net,web3,eth,debug',
-      '--http.corsdomain=*',
+      '--dev',
+      '--http.port=8547',
       '--http.addr=0.0.0.0',
-      '--http.vhosts=*',
     ];
 
     if (options.detach) {

@@ -26,6 +26,10 @@ export class TemplateGenerator {
     const rustContractPath = path.join(projectPath, 'contracts-rust', 'src', 'lib.rs');
     await FileSystem.writeFile(rustContractPath, template.rust);
 
+    // Generate main.rs for bin target (required for cargo-stylus constructor detection)
+    const mainRsPath = path.join(projectPath, 'contracts-rust', 'src', 'main.rs');
+    await FileSystem.writeFile(mainRsPath, this.generateMainRs());
+
     const cargoToml = path.join(projectPath, 'contracts-rust', 'Cargo.toml');
     await FileSystem.writeFile(cargoToml, this.generateCargoToml(template.name));
 
@@ -43,6 +47,10 @@ export class TemplateGenerator {
       const lockContent = await FileSystem.readFile(cargoLockSource);
       await FileSystem.writeFile(cargoLockDest, lockContent);
     }
+
+    // Generate Stylus.toml for deployment
+    const stylusToml = this.generateStylusToml();
+    await FileSystem.writeFile(path.join(projectPath, 'contracts-rust', 'Stylus.toml'), stylusToml);
   }
 
   private async generateSolidityFiles(projectPath: string, template: any): Promise<void> {
@@ -92,6 +100,10 @@ mini-alloc = ["stylus-sdk/mini-alloc"]
 
 [lib]
 crate-type = ["lib", "cdylib"]
+
+[[bin]]
+name = "${contractName.toLowerCase()}-bin"
+path = "src/main.rs"
 
 [profile.release]
 codegen-units = 1
@@ -203,6 +215,27 @@ PRIVATE_KEY=
 
 # Network
 NETWORK=local
+`;
+  }
+
+  private generateStylusToml(): string {
+    return `# Stylus Configuration
+# Required for cargo-stylus deployment and verification
+
+[workspace]
+# Workspace-level configuration (required)
+# You can add network configurations here if needed
+networks = {}
+`;
+  }
+
+  private generateMainRs(): string {
+    return `// Binary target for cargo-stylus constructor detection
+// This file allows cargo-stylus to check for constructors without errors
+
+fn main() {
+    println!("This contract has no constructor.");
+}
 `;
   }
 }
