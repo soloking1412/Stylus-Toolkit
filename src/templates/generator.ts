@@ -85,18 +85,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives = "=0.8.20"
-alloy-sol-types = "=0.8.20"
-stylus-sdk = "0.9.0"
+alloy-primitives = "0.8"
+alloy-sol-types = "0.8"
+stylus-sdk = "0.6.0"
 hex = { version = "0.4", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }
 
 [features]
-default = ["mini-alloc"]
+default = []
 export-abi = ["stylus-sdk/export-abi"]
-mini-alloc = ["stylus-sdk/mini-alloc"]
 
 [lib]
 crate-type = ["lib", "cdylib"]
@@ -110,7 +109,7 @@ codegen-units = 1
 strip = true
 lto = true
 panic = "abort"
-opt-level = 3
+opt-level = "z"
 `;
   }
 

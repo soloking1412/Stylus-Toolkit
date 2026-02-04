@@ -4,10 +4,8 @@ export const TEMPLATES: Record<string, any> = {
     rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 #![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
 
-#[macro_use]
 extern crate alloc;
 
-use alloc::vec::Vec;
 use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
 sol_storage! {
@@ -55,11 +53,14 @@ contract Counter {
   },
   erc20: {
     name: 'ERC20Token',
-    rust: `#![cfg_attr(not(feature = "export-abi"), no_main)]
+    rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
+
 extern crate alloc;
 
 use stylus_sdk::{
     alloy_primitives::{Address, U256},
+    msg,
     prelude::*,
     storage::{StorageMap, StorageU256},
 };
@@ -82,7 +83,7 @@ impl ERC20 {
     }
 
     pub fn transfer(&mut self, to: Address, amount: U256) -> bool {
-        let sender = self.vm().msg_sender();
+        let sender = msg::sender();
         let sender_balance = self.balances.get(sender);
 
         if sender_balance < amount {
@@ -149,10 +150,8 @@ contract ERC20Token {
     rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 #![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
 
-#[macro_use]
 extern crate alloc;
 
-use alloc::vec::Vec;
 use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
 sol_storage! {
@@ -220,10 +219,8 @@ contract ERC721NFT {
     rust: `#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 #![cfg_attr(not(any(test, feature = "export-abi")), no_std)]
 
-#[macro_use]
 extern crate alloc;
 
-use alloc::vec::Vec;
 use stylus_sdk::{alloy_primitives::U256, prelude::*};
 
 sol_storage! {

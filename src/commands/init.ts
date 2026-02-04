@@ -61,7 +61,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
     });
   }
 
-  if (!options.rustOnly && !options.solidityOnly) {
+  // Only prompt for languages if:
+  // 1. No language flags were provided AND
+  // 2. No template was provided (if template is provided, default to both languages)
+  const needsLanguagePrompt = !options.rustOnly && !options.solidityOnly && !template;
+
+  if (needsLanguagePrompt) {
     prompts.push({
       type: 'checkbox',
       name: 'languages',

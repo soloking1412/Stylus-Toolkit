@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name('stylus-toolkit')
   .description('A comprehensive CLI development environment for Arbitrum Stylus smart contracts')
-  .version('0.2.7');
+  .version('0.2.8');
 
 program
   .command('init')
