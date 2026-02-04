@@ -88,10 +88,8 @@ edition = "2021"
 stylus-sdk = "=0.6.1"
 alloy-primitives = "=0.8.20"
 alloy-sol-types = "=0.8.20"
+ruint = "=1.15.0"
 hex = { version = "=0.4.3", default-features = false }
-
-[dev-dependencies]
-tokio = { version = "1.12.0", features = ["full"] }
 
 [features]
 default = []
