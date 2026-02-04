@@ -85,10 +85,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives = "0.8"
-alloy-sol-types = "0.8"
-stylus-sdk = "0.6.0"
-hex = { version = "0.4", default-features = false }
+stylus-sdk = "=0.6.1"
+alloy-primitives = "=0.8.20"
+alloy-sol-types = "=0.8.20"
+hex = { version = "=0.4.3", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }
