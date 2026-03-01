@@ -1,6 +1,6 @@
 # Stylus Toolkit
 
-**The easiest way to build Arbitrum Stylus smart contracts in Rust.**
+**CLI-first developer toolkit for building Arbitrum Stylus smart contracts in Rust.**
 
 [![npm version](https://img.shields.io/npm/v/stylus-toolkit.svg)](https://www.npmjs.com/package/stylus-toolkit)
 [![License](https://img.shields.io/npm/l/stylus-toolkit)](LICENSE)
@@ -8,16 +8,27 @@
 [![CI](https://github.com/soloking1412/Stylus-Toolkit/workflows/CI/badge.svg)](https://github.com/soloking1412/Stylus-Toolkit/actions)
 [![Node Version](https://img.shields.io/node/v/stylus-toolkit.svg)](https://nodejs.org)
 
-Build, deploy, and profile Stylus contracts with simple commands. **No Docker required** - works with testnets out of the box!
+Stylus Toolkit is a CLI-first environment for building, deploying, and profiling
+Arbitrum Stylus contracts in Rust.
+
+It focuses on reducing setup friction and standardizing common Stylus workflows.
+**No Docker required** — works with testnets out of the box.
+
+## Project Status
+
+This project is **Arbitrum grant-approved** and actively maintained.
+It is being built as long-term ecosystem tooling for Stylus developers.
 
 ## ✨ Features
 
-- 🚀 **One-command project setup** - 4 ready-to-deploy templates
+- 🚀 **One-command project setup** — opinionated templates for common use cases
 - 📦 **Built-in WASM compiler** - Automatic Rust to WebAssembly compilation
-- ⚡ **Gas profiling** - Compare Rust vs Solidity gas usage
+- ⚡ **Gas profiling** — side-by-side Rust vs Solidity comparisons
 - 🌐 **Network support** - Local, testnet, and mainnet configurations
 - 🐳 **Docker optional** - Use testnets for development (no Docker needed!)
 - 📊 **Multiple export formats** - JSON, CSV, HTML reports
+
+Designed to get from zero → compiled contract in minutes.
 
 ## 🎯 Quick Start (3 Commands)
 
@@ -50,6 +61,18 @@ stylus-toolkit config --set defaultNetwork=arbitrum-sepolia
 
 Most developers use testnet and don't need Docker!
 
+## Why Stylus Toolkit?
+
+Stylus development today often requires manual setup, scattered scripts,
+and custom workflows per project.
+
+Stylus Toolkit aims to:
+- Standardize common Stylus dev workflows
+- Reduce setup and configuration overhead
+- Make Rust-based smart contract development more approachable
+
+The goal is not abstraction for its own sake, but faster iteration for builders.
+
 ## 📚 Documentation
 
 - **[Quick Start Guide](./QUICKSTART.md)** - Complete tutorial from zero to deployment
@@ -57,6 +80,8 @@ Most developers use testnet and don't need Docker!
 - **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
 
 ## 🛠️ Commands
+
+Commands are designed to be explicit, scriptable, and CI-friendly.
 
 ### init
 
