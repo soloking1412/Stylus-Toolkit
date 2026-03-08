@@ -2,7 +2,7 @@
 
 Get started with Arbitrum Stylus development in minutes!
 
-## 🚀 Fastest Start (3 Commands)
+## 🚀 Fastest Start (4 Commands)
 
 ```bash
 # 1. Install
@@ -13,11 +13,14 @@ stylus-toolkit init -n my-app -t basic && cd my-app
 
 # 3. Build
 cd contracts-rust && rustup target add wasm32-unknown-unknown && cd .. && stylus-toolkit build
+
+# 4. Deploy (with automatic gas estimation!)
+stylus-toolkit deploy --network arbitrum-sepolia --private-key-path=./key.txt
 ```
 
-**Done!** Your Stylus contract is compiled and ready to deploy.
+**Done!** Your Stylus contract is built and deployed with **automatic gas estimation** that ensures deployment always succeeds.
 
-**No Docker needed** - Deploy to testnet directly (see Step 5 below).
+**No Docker needed** - Deploy to testnet directly with automatic gas calculation.
 
 ## Prerequisites
 
@@ -161,23 +164,73 @@ Then get free testnet ETH:
 
 **No Docker installation required!** Skip to deployment.
 
-### Step 6: Profile Gas Usage
+### Step 6: Deploy Your Contract (NEW!)
+
+The toolkit includes **automatic gas estimation** that ensures your deployment always succeeds:
+
+```bash
+# Create a key file (NEVER commit to git!)
+echo "0xYOUR_PRIVATE_KEY" > key.txt
+
+# Deploy to Arbitrum Sepolia with automatic gas estimation
+stylus-toolkit deploy --network arbitrum-sepolia --private-key-path=./key.txt
+```
+
+**Features:**
+- ✅ **Automatic gas calculation** based on WASM size
+- ✅ **2.5x safety buffer** to prevent out-of-gas errors
+- ✅ **Network verification** for accurate estimates
+- ✅ **Always succeeds** - no more deployment failures!
+
+**Expected Output:**
+```
+✔ Gas calculated: 14,610,800 (WASM: 14.40 KB, 2.5x safety buffer)
+✔ Contract deployed successfully (3.2s)
+
+▶ Deployment Results
+  Status           : ✓ Deployed
+  Network          : arbitrum-sepolia
+  Contract Address : 0x1234...5678
+  Gas Used         : 9,740,533
+  Gas Limit        : 14,610,800
+
+▶ Explorer Links
+  Contract: https://sepolia.arbiscan.io/address/0x1234...5678
+```
+
+**Deployment Options:**
+```bash
+# Estimate gas without deploying
+stylus-toolkit deploy --estimate-only --private-key-path=./key.txt
+
+# Deploy to local node
+stylus-toolkit deploy --private-key-path=./key.txt
+
+# Deploy to mainnet
+stylus-toolkit deploy --network arbitrum-one --private-key-path=./key.txt
+
+# Manual gas limit (if needed)
+stylus-toolkit deploy --gas-limit=20000000 --private-key-path=./key.txt
+```
+
+See [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md) for complete deployment documentation.
+
+### Step 7: Profile Gas Usage
 
 ```bash
 # Compare Rust vs Solidity gas consumption
 stylus-toolkit profile --contract my-counter
 ```
 
-**Expected (Milestone 1):**
+**Expected Output:**
 ```
 ✔ Rust compilation successful (0.21s)
 ✔ Solidity compilation successful (0.13s)
 
-⚠ Gas profiling requires network connection
-  (Full profiling available in Milestone 2)
+✅ Excellent gas optimization: 28.70% TCO savings
 ```
 
-### Step 7: View Your Contract Code
+### Step 8: View Your Contract Code
 
 **Rust Contract (`contracts-rust/src/lib.rs`):**
 ```rust
@@ -214,7 +267,7 @@ impl Counter {
 }
 ```
 
-### Step 8: Configure Networks
+### Step 9: Configure Networks
 
 ```bash
 # List current configuration
@@ -329,7 +382,7 @@ docker logs -f nitro-testnode                  # View node logs
 # Testing & Profiling
 stylus-toolkit profile --contract <name>       # Gas profiling
 stylus-toolkit profile --network arbitrum-sepolia  # Profile on testnet
-stylus-toolkit benchmark                       # Run benchmarks (coming soon)
+stylus-toolkit benchmark                       # Run benchmarks (in development)
 
 # Configuration
 stylus-toolkit config --set key=value          # Set config

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { DEFAULT_DOCKER_IMAGE, DEFAULT_RPC_PORT, DEFAULT_CHAIN_ID } from '../config/constants';
 import execa from 'execa';
 import chalk from 'chalk';
 
@@ -7,10 +8,35 @@ interface DevOptions {
   detach?: boolean;
 }
 
+async function waitForNodeReady(port: string): Promise<boolean> {
+  const maxAttempts = 30;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const response = await fetch(`http://localhost:${port}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_chainId',
+          params: [],
+          id: 1
+        })
+      });
+      if (response.ok) {
+        return true;
+      }
+    } catch (error) {
+      // Node not ready yet
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  return false;
+}
+
 export async function devCommand(options: DevOptions): Promise<void> {
   logger.header('Stylus Toolkit - Local Development Node');
 
-  const port = options.port || '8547';
+  const port = options.port || DEFAULT_RPC_PORT.toString();
 
   try {
     // Check if Docker is installed
@@ -80,7 +106,7 @@ export async function devCommand(options: DevOptions): Promise<void> {
     logger.startSpinner('Pulling Arbitrum Nitro testnode image...');
 
     try {
-      await execa('docker', ['pull', 'offchainlabs/nitro-node:v3.7.1-926f1ab'], {
+      await execa('docker', ['pull', DEFAULT_DOCKER_IMAGE], {
         stdio: 'pipe',
       });
       logger.succeedSpinner('Image pulled successfully');
@@ -100,7 +126,7 @@ export async function devCommand(options: DevOptions): Promise<void> {
       '--name', 'nitro-testnode',
       '-p', `${port}:8547`,
       '-p', '8548:8548',
-      'offchainlabs/nitro-node:v3.7.1-926f1ab',
+      DEFAULT_DOCKER_IMAGE,
       '--dev',
       '--http.port=8547',
       '--http.addr=0.0.0.0',
@@ -118,10 +144,21 @@ export async function devCommand(options: DevOptions): Promise<void> {
       logger.success('Local Stylus node is running!');
       logger.newLine();
 
+      logger.startSpinner('Waiting for node to be ready...');
+      const ready = await waitForNodeReady(port);
+
+      if (ready) {
+        logger.succeedSpinner('Node is ready!');
+      } else {
+        logger.failSpinner('Node may not be fully ready yet');
+        logger.warn('You may need to wait a few more seconds before connecting');
+      }
+
+      logger.newLine();
       logger.section('Connection Details');
       logger.table({
         'RPC URL': `http://localhost:${port}`,
-        'Chain ID': '412346',
+        'Chain ID': DEFAULT_CHAIN_ID.toString(),
         'WebSocket': `ws://localhost:8548`,
         'Container': 'nitro-testnode',
       });
@@ -133,13 +170,25 @@ export async function devCommand(options: DevOptions): Promise<void> {
       logger.info(`• Node status:  docker ps | grep nitro-testnode`);
       logger.newLine();
 
-      logger.section('Development Account');
-      logger.info('Address: 0x3f1Eae7D46d88F08fc2F8ed27FCb2AB183EB2d0E');
-      logger.info('Private Key: Available in node logs');
+      logger.section('Pre-Funded Test Accounts');
+      logger.info(chalk.bold('Account 1 (Developer):'));
+      logger.info('  Address:     0x3f1Eae7D46d88F08fc2F8ed27FCb2AB183EB2d0E');
+      logger.info('  Private Key: 0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659');
+      logger.info('  Balance:     10,000 ETH (pre-funded)');
+      logger.newLine();
+      logger.info(chalk.bold('Account 2 (Tester):'));
+      logger.info('  Address:     0x1111111111111111111111111111111111111111');
+      logger.info('  Private Key: 0x8166f546bab6da521a8369cab06c5d2b9e46670292d85c875ee9ec20e84ffb61');
+      logger.info('  Balance:     10,000 ETH (pre-funded)');
       logger.newLine();
 
-      logger.info(chalk.green('You can now deploy and test your Stylus contracts!'));
-      logger.info(`Try: ${chalk.cyan('stylus-toolkit profile --contract <name>')}`);
+      logger.section('Quick Deploy');
+      logger.info(`• Save key:   ${chalk.cyan('echo "0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659" > key.txt')}`);
+      logger.info(`• Deploy:     ${chalk.cyan('stylus-toolkit deploy --network local --private-key-path ./key.txt')}`);
+      logger.info(`• Profile:    ${chalk.cyan('stylus-toolkit profile --network local')}`);
+      logger.newLine();
+
+      logger.success('Local Stylus node is ready for development!');
 
     } else {
       logger.info(chalk.yellow('Starting node in foreground mode...'));
@@ -149,7 +198,7 @@ export async function devCommand(options: DevOptions): Promise<void> {
       logger.section('Connection Details');
       logger.table({
         'RPC URL': `http://localhost:${port}`,
-        'Chain ID': '412346',
+        'Chain ID': DEFAULT_CHAIN_ID.toString(),
         'WebSocket': `ws://localhost:8548`,
       });
       logger.newLine();

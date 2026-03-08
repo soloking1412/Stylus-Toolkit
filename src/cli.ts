@@ -9,13 +9,14 @@ import { devCommand } from './commands/dev';
 import { profileCommand } from './commands/profile';
 import { benchmarkCommand } from './commands/benchmark';
 import { configCommand } from './commands/config';
+import { dashboardCommand } from './commands/dashboard';
 
 const program = new Command();
 
 program
   .name('stylus-toolkit')
   .description('A comprehensive CLI development environment for Arbitrum Stylus smart contracts')
-  .version('0.2.10');
+  .version('0.2.11');
 
 program
   .command('init')
@@ -83,9 +84,15 @@ program
   .option('--reset', 'Reset to default configuration')
   .action(configCommand);
 
+program
+  .command('dashboard')
+  .description('Launch analytics dashboard in browser')
+  .option('-p, --port <port>', 'Dashboard server port', '3000')
+  .action(dashboardCommand);
+
 program.on('command:*', function () {
-  console.error(chalk.red('Invalid command: %s\n'), program.args.join(' '));
-  console.log(chalk.yellow('See --help for a list of available commands.'));
+  process.stderr.write(chalk.red('Invalid command: %s\n').replace('%s', program.args.join(' ')));
+  process.stdout.write(chalk.yellow('See --help for a list of available commands.\n'));
   process.exit(1);
 });
 

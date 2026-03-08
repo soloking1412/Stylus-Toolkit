@@ -4,6 +4,7 @@ import {
   GasSavings,
   FunctionSavings,
   TCOAnalysis,
+  FunctionGasData,
 } from '../types';
 
 export class GasComparator {
@@ -52,8 +53,8 @@ export class GasComparator {
   }
 
   private calculateFunctionSavings(
-    rustFunctions: Map<string, any>,
-    solidityFunctions: Map<string, any>
+    rustFunctions: Map<string, FunctionGasData>,
+    solidityFunctions: Map<string, FunctionGasData>
   ): Map<string, FunctionSavings> {
     const savingsMap = new Map<string, FunctionSavings>();
 
@@ -98,8 +99,7 @@ export class GasComparator {
   }
 
   private calculateTCO(rustProfile: GasProfile, solidityProfile: GasProfile): TCOAnalysis {
-    // Total Cost of Ownership = Deployment + (Execution × Call Frequency)
-    const callFrequency = 100; // Use function call frequency from estimates
+    const callFrequency = 100;
 
     let rustTotalExecution = 0;
     let solidityTotalExecution = 0;
@@ -108,12 +108,8 @@ export class GasComparator {
     for (const [functionName, rustData] of rustProfile.functionGas) {
       const solidityData = solidityProfile.functionGas.get(functionName);
       if (solidityData) {
-        // Type assertion for estimation data which has avgGas and calls properties
-        const rustDataAny = rustData as any;
-        const solidityDataAny = solidityData as any;
-
-        const rustCalls = rustDataAny.calls || rustData.executions || callFrequency;
-        const solidityCalls = solidityDataAny.calls || solidityData.executions || callFrequency;
+        const rustCalls = rustData.executions || callFrequency;
+        const solidityCalls = solidityData.executions || callFrequency;
 
         rustTotalExecution += rustData.avgGas * rustCalls;
         solidityTotalExecution += solidityData.avgGas * solidityCalls;

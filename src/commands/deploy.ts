@@ -1,5 +1,7 @@
 import { logger } from '../utils/logger';
 import { FileSystem } from '../utils/file-system';
+import { GasEstimator } from '../utils/gas-estimator';
+import { NETWORK_CONFIGS } from '../config/constants';
 import path from 'path';
 import execa from 'execa';
 import chalk from 'chalk';
@@ -39,25 +41,14 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
       process.exit(1);
     }
 
-    // Determine RPC endpoint
-    let rpcUrl = options.rpc;
-    if (!rpcUrl) {
-      switch (options.network) {
-        case 'arbitrum-sepolia':
-          rpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc';
-          break;
-        case 'arbitrum-one':
-        case 'arbitrum-mainnet':
-          rpcUrl = 'https://arb1.arbitrum.io/rpc';
-          break;
-        case 'local':
-        default:
-          rpcUrl = 'http://localhost:8547';
-          break;
-      }
-    }
-
     const network = options.network || 'local';
+    let rpcUrl = options.rpc;
+
+    if (!rpcUrl) {
+      const networkKey = network === 'arbitrum-mainnet' ? 'arbitrum-one' : network;
+      const networkConfig = NETWORK_CONFIGS[networkKey as keyof typeof NETWORK_CONFIGS];
+      rpcUrl = networkConfig?.rpc || 'http://localhost:8547';
+    }
 
     logger.newLine();
     logger.section('Deployment Configuration');
@@ -69,8 +60,8 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
     });
     logger.newLine();
 
-    // Validate private key
-    if (!options.privateKey && !options.privateKeyPath) {
+    // Validate private key (not required for estimate-only mode)
+    if (!options.estimateOnly && !options.privateKey && !options.privateKeyPath) {
       logger.error('Private key is required for deployment.');
       logger.info('Options:');
       logger.info('  1. Use --private-key-path=<path> (recommended)');
@@ -79,6 +70,9 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
       logger.warn('For testnet, create a key.txt file with your private key:');
       logger.info('  echo "0xyourprivatekey" > key.txt');
       logger.info('  stylus-toolkit deploy --private-key-path=./key.txt --network arbitrum-sepolia');
+      logger.info('');
+      logger.info('To only estimate gas (no key needed):');
+      logger.info('  stylus-toolkit deploy --estimate-only');
       process.exit(1);
     }
 
@@ -132,15 +126,10 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
 
       const wasmSizeBytes = wasmBinary.length;
 
-      // Estimated gas: base + (size * gas_per_byte) * safety_multiplier
-      // Using 2.5x safety multiplier to ensure deployment always succeeds
-      const baseGas = 21000;
-      const activationGas = 14000000;
-      const perByteGas = 16;
-      const safetyMultiplier = 2.5;
-
-      const estimatedGas = Math.ceil(
-        baseGas + activationGas + (wasmSizeBytes * perByteGas * safetyMultiplier)
+      const estimatedGas = GasEstimator.estimateDeploymentGas(
+        wasmSizeBytes,
+        'rust',
+        2.5
       );
 
       gasLimit = estimatedGas.toString();

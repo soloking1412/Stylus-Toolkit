@@ -1,6 +1,8 @@
 import { ethers } from 'ethers';
 import { logger } from '../utils/logger';
-import { CompilationResult, GasProfile } from '../types';
+import { CompilationResult, GasProfile, FunctionGasData } from '../types';
+import { GasEstimator } from '../utils/gas-estimator';
+import { GAS_FUNCTION_ESTIMATES } from '../config/constants';
 
 export class GasProfiler {
   private provider: ethers.Provider;
@@ -66,35 +68,26 @@ export class GasProfiler {
   }
 
   private estimateGasProfile(compilation: CompilationResult): GasProfile {
-    // Estimate deployment gas based on bytecode size and language
-    const bytecodeSize = compilation.bytecode.length / 2; // hex to bytes
+    const bytecodeSize = compilation.bytecode.length / 2;
+    const estimatedDeploymentGas = GasEstimator.estimateProfileGas(
+      bytecodeSize,
+      compilation.language
+    );
 
-    let estimatedDeploymentGas: number;
-    const functionGasMap = new Map<string, any>();
+    const functionGasMap = new Map<string, FunctionGasData>();
+    const estimates = GAS_FUNCTION_ESTIMATES[compilation.language];
 
-    if (compilation.language === 'rust') {
-      // Stylus WASM contracts: Realistic deployment cost
-      // Uses 16 gas per byte for compressed WASM (Arbitrum Stylus pricing)
-      estimatedDeploymentGas = Math.floor(21000 + (bytecodeSize * 16));
-
-      // Realistic function execution based on Arbitrum Stylus benchmarks
-      // Source: Arbitrum docs, RedStone oracle analysis, WELLDONE Studio testing
-      // Oracle workloads: ~26% savings, Compute: ~40-50% savings
-      functionGasMap.set('read', { avgGas: 5000, calls: 100 });      // Light read operation
-      functionGasMap.set('write', { avgGas: 12000, calls: 100 });    // State write (SSTORE equiv)
-      functionGasMap.set('compute', { avgGas: 8000, calls: 100 });   // Computation workload
-      functionGasMap.set('oracle', { avgGas: 75000, calls: 100 });   // Oracle verification (3 signers)
-    } else {
-      // Solidity EVM contracts: Standard deployment and execution costs
-      estimatedDeploymentGas = Math.floor(21000 + (bytecodeSize * 200));
-
-      // EVM execution costs (baseline from Arbitrum benchmarks)
-      // Source: Arbitrum Stylus documentation, RedStone oracle comparison
-      functionGasMap.set('read', { avgGas: 6000, calls: 100 });      // SLOAD operation
-      functionGasMap.set('write', { avgGas: 20000, calls: 100 });    // SSTORE (warm slot)
-      functionGasMap.set('compute', { avgGas: 15000, calls: 100 });  // Typical computation
-      functionGasMap.set('oracle', { avgGas: 103000, calls: 100 });  // Oracle with 3 signers
-    }
+    Object.entries(estimates).forEach(([funcName, data]) => {
+      functionGasMap.set(funcName, {
+        functionName: funcName,
+        gasUsed: data.avgGas,
+        executions: data.calls,
+        avgGas: data.avgGas,
+        minGas: data.avgGas,
+        maxGas: data.avgGas,
+        testCases: []
+      });
+    });
 
     logger.succeedSpinner(
       `${compilation.language} estimation complete (Est. Deployment: ${estimatedDeploymentGas} gas)`
@@ -112,36 +105,25 @@ export class GasProfiler {
   }
 
   private estimateDeploymentGas(compilation: CompilationResult): number {
-    const bytecodeSize = compilation.bytecode.length / 2; // hex to bytes
-
-    if (compilation.language === 'rust') {
-      // Stylus WASM: Base cost + compressed WASM storage
-      // 21000 (base tx) + ~300,000 (deployment overhead) + bytecode costs
-      return Math.floor(21000 + 300000 + (bytecodeSize * 16));
-    } else {
-      // Solidity: EVM deployment costs
-      // 21000 (base tx) + 32000 (contract creation) + bytecode costs
-      return Math.floor(21000 + 32000 + (bytecodeSize * 200));
-    }
+    const bytecodeSize = compilation.bytecode.length / 2;
+    return GasEstimator.estimateProfileGas(bytecodeSize, compilation.language);
   }
 
-  private estimateFunctionGas(compilation: CompilationResult): Map<string, any> {
-    const functionGasMap = new Map<string, any>();
+  private estimateFunctionGas(compilation: CompilationResult): Map<string, FunctionGasData> {
+    const functionGasMap = new Map<string, FunctionGasData>();
+    const estimates = GAS_FUNCTION_ESTIMATES[compilation.language];
 
-    if (compilation.language === 'rust') {
-      // Realistic function execution based on Arbitrum Stylus benchmarks
-      // Source: Arbitrum docs, RedStone oracle analysis, WELLDONE Studio testing
-      functionGasMap.set('read', { avgGas: 5000, calls: 100 });      // Light read operation
-      functionGasMap.set('write', { avgGas: 12000, calls: 100 });    // State write (SSTORE equiv)
-      functionGasMap.set('compute', { avgGas: 8000, calls: 100 });   // Computation workload
-      functionGasMap.set('oracle', { avgGas: 75000, calls: 100 });   // Oracle verification (3 signers)
-    } else {
-      // EVM execution costs (baseline from Arbitrum benchmarks)
-      functionGasMap.set('read', { avgGas: 6000, calls: 100 });      // SLOAD operation
-      functionGasMap.set('write', { avgGas: 20000, calls: 100 });    // SSTORE (warm slot)
-      functionGasMap.set('compute', { avgGas: 15000, calls: 100 });  // Typical computation
-      functionGasMap.set('oracle', { avgGas: 103000, calls: 100 });  // Oracle with 3 signers
-    }
+    Object.entries(estimates).forEach(([funcName, data]) => {
+      functionGasMap.set(funcName, {
+        functionName: funcName,
+        gasUsed: data.avgGas,
+        executions: data.calls,
+        avgGas: data.avgGas,
+        minGas: data.avgGas,
+        maxGas: data.avgGas,
+        testCases: []
+      });
+    });
 
     return functionGasMap;
   }

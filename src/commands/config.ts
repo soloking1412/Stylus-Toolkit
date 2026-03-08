@@ -34,7 +34,7 @@ export async function configCommand(options: ConfigOptions): Promise<void> {
       process.exit(1);
     }
     const value = config.get(options.get as any);
-    console.log(chalk.cyan(options.get + ':'), value);
+    logger.info(`${chalk.cyan(options.get + ':')} ${value}`);
     return;
   }
 
@@ -62,7 +62,8 @@ export async function configCommand(options: ConfigOptions): Promise<void> {
     networks.forEach((networkName) => {
       const network = config.getNetwork(networkName);
       if (network) {
-        console.log(chalk.bold(`\n${networkName}:`));
+        logger.newLine();
+        logger.section(networkName);
         logger.table({
           'Name': network.name,
           'RPC URL': network.rpcUrl,

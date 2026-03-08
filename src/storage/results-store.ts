@@ -120,4 +120,33 @@ export class ResultsStore {
   getResultsDirectory(): string {
     return this.resultsDir;
   }
+
+  async getAllResults(): Promise<ComparisonResult[]> {
+    const files = await this.list();
+    const results: ComparisonResult[] = [];
+
+    for (const file of files) {
+      try {
+        const result = await this.load(file);
+        results.push(result);
+      } catch (error) {
+        logger.warn(`Failed to load result file ${file}`);
+      }
+    }
+
+    return results;
+  }
+
+  async getResultsByContract(contractName: string): Promise<ComparisonResult[]> {
+    const allResults = await this.getAllResults();
+    return allResults.filter(r => r.contractName === contractName);
+  }
+
+  async getResultsByDateRange(startDate: Date, endDate: Date): Promise<ComparisonResult[]> {
+    const allResults = await this.getAllResults();
+    return allResults.filter(r => {
+      const timestamp = new Date(r.timestamp);
+      return timestamp >= startDate && timestamp <= endDate;
+    });
+  }
 }
