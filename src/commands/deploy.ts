@@ -135,67 +135,13 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
       gasLimit = estimatedGas.toString();
 
       logger.succeedSpinner(
-        `Gas calculated: ${estimatedGas.toLocaleString()} (WASM: ${wasmSizeKb} KB, 2.5x safety buffer)`
+        `Gas calculated: ${estimatedGas.toLocaleString()} (WASM: ${wasmSizeKb} KB, informational)`
       );
-
-      // Try to get actual estimate from cargo stylus if network is available
-      try {
-        const estimateArgs = [
-          'stylus',
-          'deploy',
-          '--estimate-gas',
-          '--wasm-file',
-          wasmFilePath,
-          '--endpoint',
-          rpcUrl,
-        ];
-
-        if (options.privateKeyPath) {
-          estimateArgs.push('--private-key-path', options.privateKeyPath);
-        } else if (options.privateKey) {
-          estimateArgs.push('--private-key', options.privateKey);
-        }
-
-        logger.startSpinner('Verifying gas estimate with network...');
-
-        const { stdout, stderr } = await execa('cargo', estimateArgs, {
-          cwd: rustProjectPath,
-          reject: false,
-          timeout: 10000, // 10 second timeout
-        });
-
-        // Parse gas estimate from output
-        const output = stdout + stderr;
-        const gasMatch = output.match(/estimated?\s+gas[:\s]+(\d+)/i) ||
-                        output.match(/gas\s+estimate[:\s]+(\d+)/i) ||
-                        output.match(/(\d+)\s+gas/i);
-
-        if (gasMatch) {
-          const networkEstimate = parseInt(gasMatch[1]);
-          // Add 50% buffer to network estimate
-          const gasWithBuffer = Math.ceil(networkEstimate * 1.5);
-
-          // Use the higher of the two estimates for safety
-          const finalGas = Math.max(estimatedGas, gasWithBuffer);
-          gasLimit = finalGas.toString();
-
-          logger.succeedSpinner(
-            `Network estimate: ${networkEstimate.toLocaleString()}, using: ${finalGas.toLocaleString()} (highest with buffer)`
-          );
-        } else {
-          logger.updateSpinner('Network estimate unavailable, using calculated gas');
-          logger.succeedSpinner(`Using calculated gas: ${estimatedGas.toLocaleString()}`);
-        }
-      } catch (error) {
-        // Network estimation failed, use calculated estimate
-        logger.updateSpinner('Network unavailable, using calculated gas');
-        logger.succeedSpinner(`Using calculated gas: ${estimatedGas.toLocaleString()}`);
-      }
     }
 
     if (options.estimateOnly) {
       logger.success('Gas estimation complete!');
-      logger.info(`Use --gas-limit=${gasLimit} for actual deployment`);
+      logger.info(`Estimated gas: ${parseInt(gasLimit!).toLocaleString()} (informational — cargo-stylus handles gas automatically)`);
       return;
     }
 
@@ -208,21 +154,16 @@ export async function deployCommand(options: DeployOptions): Promise<void> {
       const deployArgs = [
         'stylus',
         'deploy',
-        '--wasm-file',
-        wasmFilePath,
         '--endpoint',
         rpcUrl,
       ];
 
       if (options.privateKeyPath) {
-        deployArgs.push('--private-key-path', options.privateKeyPath);
+        // Resolve to absolute so cargo-stylus can find it regardless of cwd
+        const absoluteKeyPath = path.resolve(process.cwd(), options.privateKeyPath);
+        deployArgs.push('--private-key-path', absoluteKeyPath);
       } else if (options.privateKey) {
         deployArgs.push('--private-key', options.privateKey);
-      }
-
-      // Add gas limit
-      if (gasLimit) {
-        deployArgs.push('--gas-limit', gasLimit);
       }
 
       // Add no-activate flag if specified

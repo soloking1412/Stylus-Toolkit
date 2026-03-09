@@ -1,4 +1,4 @@
-export const DEFAULT_DOCKER_IMAGE = 'offchainlabs/nitro-node:v2.3.3-6a1c1a7';
+export const DEFAULT_DOCKER_IMAGE = 'offchainlabs/nitro-node:v3.2.1-d81324d';
 export const DEFAULT_RPC_PORT = 8547;
 export const DEFAULT_CHAIN_ID = 412346;
 
