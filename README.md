@@ -269,14 +269,16 @@ stylus-toolkit profile --network arbitrum-one
 
 ## Video tutorials
 
-1. **[Install & first gas profile](https://github.com/soloking1412/stylus-toolkit)** — From `npm install` to profiling results (5 min)
-2. **[Local testnet + deployment](https://github.com/soloking1412/stylus-toolkit)** — Start a node, use pre-funded accounts, deploy (7 min)
-3. **[Analytics dashboard](https://github.com/soloking1412/stylus-toolkit)** — Track gas savings across runs, export reports (5 min)
+1. **[Install & first gas profile](https://youtu.be/haz-cPzYbvw?si=AP4748eUh3gISZai)** — From `npm install` to profiling results (5 min)
+2. **[Local testnet + deployment](https://youtu.be/PmF2ysuj0-w?si=HMbdXs2YpMFLKykc)** — Start a node, use pre-funded accounts, deploy (7 min)
+3. **[Analytics dashboard](https://youtu.be/2PYyX0dmtZM?si=JHXjXma8CHruhg22)** — Track gas savings across runs, export reports (5 min)
 
 ---
 
 ## Community
 
+- **Discord** — [Join the community](https://discord.gg/rMAZ8ngSsb)
+- **YouTube** — [@StylusToolkit](https://www.youtube.com/@StylusToolkit)
 - **GitHub Issues** — [Bug reports and feature requests](https://github.com/soloking1412/stylus-toolkit/issues)
 - **GitHub Discussions** — [Q&A, showcases, help](https://github.com/soloking1412/stylus-toolkit/discussions)
 - **Twitter** — [@lord_soloking](https://twitter.com/lord_soloking)
